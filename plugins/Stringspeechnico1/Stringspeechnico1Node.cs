@@ -15,16 +15,18 @@ namespace VVVV.Nodes
 	/* PLUGIN INFO ********************************************************/
 	[PluginInfo(Name = "speechnico1", Category = "String", Help = "Basic template with one string in/out", Tags = "c#")]
 
-
 	/* CLASS **************************************************************/
 	public class Stringspeechnico1Node : IPluginEvaluate
 	{
 		/* Pins definition ************************************************/
-		[Input("Input", DefaultString = "cane")]
+		[Input("Input", DefaultString = "input strings")]
 		public IDiffSpread<string> FInput;
 
 		[Output("Output")]
 		public ISpread<string> FOutput;
+		
+		//[OutputAttribute ("Bang")]
+		//public ISpread<bang> 
 
 		[Import()]
 		public ILogger FLogger;
@@ -34,8 +36,10 @@ namespace VVVV.Nodes
 		public RecognizerInfo info = null;
 		public SpeechRecognitionEngine sre = null;
 		public bool done = true;
+		public Thread th;
+		public int nSlices = 0;
+		public double confidence = 0.0;
 
-		
 		/* CONSTRUCTOR ********************************************************/
 		public Stringspeechnico1Node()
 		{
@@ -60,20 +64,65 @@ namespace VVVV.Nodes
 			/* lets load default grammar */
 			GrammarBuilder gb = new GrammarBuilder();
 			gb.Culture = sre.RecognizerInfo.Culture;
-			gb.Append("supercallifragilistichespiralidoso");
+			
+			Choices words = new Choices();
+			words.Add(new string[]{
+				"cane",
+				"abbaiare",
+				"cotoletta",
+				"milano",
+				"freccia nera",
+				"luigi",
+				"gianni",
+				"perfavore",
+				"passami",
+				"il",
+				"sale"
+			});
+			
+			gb.Append(words);
 			Grammar g = new Grammar( gb );
-			/* carica la grammatica nell'sre */
+			// carica la grammatica nell'sre
 			sre.LoadGrammar( g );
+			
+			th = new Thread( recon );
+			th.Start();
 		}
 
-		/* speech recognized */
+	
+		/* RECON THREAD *******************************************************/
+		public void recon() 
+		{
+			while( 1 != 2 )
+			{
+				FLogger.Log( LogType.Debug, "Thread ({0}): {1}, Priority {2}", 
+											Thread.CurrentThread.ManagedThreadId,
+											Thread.CurrentThread.ThreadState,
+											Thread.CurrentThread.Priority
+				);
+				
+				sre.Recognize();
+				Thread.Sleep( 1000 );
+			}
+		}
+		
+		
+		/* CALLBACKS **********************************************************/
+		// speech recognized
 		public void sr(object sender, SpeechRecognizedEventArgs e)
 		{
-			FLogger.Log( LogType.Debug, "recognized");
-			done = true;
+			confidence = e.Result.Confidence;
+			if( confidence > 0.95 ) 
+			{
+				FLogger.Log( LogType.Debug, "confidence: " + confidence );
+				guess = e.Result.Text;
+				FLogger.Log( LogType.Debug, "recognized: " + guess );
+			}
 		}
-
-		/* recognize complete */
+		
+		
+		
+		// recognize complete
 		public void rc(object sender, RecognizeCompletedEventArgs e)
 		{
 			FLogger.Log( LogType.Debug, "completed");
@@ -92,50 +141,47 @@ namespace VVVV.Nodes
 		//called when data for any output pin is requested
 		public void Evaluate(int SpreadMax)
 		{
+			/*
+			FLogger.Log( LogType.Debug, "Main Thread ({0}): {1}, Priority {2}",
+											Thread.CurrentThread.ManagedThreadId,
+											Thread.CurrentThread.ThreadState,
+											Thread.CurrentThread.Priority
+			);
+			*/
+			nSlices = SpreadMax;
 			FOutput.SliceCount = SpreadMax;
-			
-			//sre.Recognize();
-			
-			//if( !done )
-			//{
-			//	sre.Recognize();
-			//	FLogger.Log(LogType.Debug, "trying to recognize");
-			//}
-		
+					
 			// do something only if input is changed
 			if( FInput.IsChanged )
 			{
 				FLogger.Log(LogType.Debug, "## Input changed ##");
-				done = false;
-				
 				/*
-				for(int i=0; i< SpreadMax; i++)
-				{
-					FLogger.Log(LogType.Debug, "slice: "+FInput[i] );
-				}
-				FLogger.Log(LogType.Debug, "");
-				*/
+				done = false;
 
-				/* generate grammar from input strings */
+				// generate grammar from input strings 
 				GrammarBuilder gb = new GrammarBuilder();
 				gb.Culture = sre.RecognizerInfo.Culture;
-				for(int i=0; i< SpreadMax; i++) {
+				
+				for(int i=0; i< SpreadMax; i++) 
+				{
 					FLogger.Log(LogType.Debug, "slice: "+FInput[i] );
 					gb.Append( FInput[i] );
 				}
 				Grammar g = new Grammar( gb );
-				/* carica la grammatica nell'sre */
+				// carica la grammatica nell'sre
 				sre.LoadGrammar( g );
-
-				//FLogger.Log( LogType.Debug, "start recognizing: " );
-				//sre.Recognize();
+				*/
 				
-				// replicate the string for all
-				for (int i = 0; i < SpreadMax; i++)
-				{
-					FOutput[i] = guess;
-				}
+				//th.Start();
 			} // end of if( FInput.IsChanged )
+			
+						// replicate the string for all
+			for (int i = 0; i < nSlices; i++)
+			{
+				FOutput[i] = guess;				
+			}
+			
+			
 		} // end of Evaluate(int SpreadMax)
 	}
 }
