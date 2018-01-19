@@ -1,0 +1,73 @@
+<!DOCTYPE PATCH  SYSTEM "http://vvvv.org/versions/vvvv50beta35.8.dtd" >
+   <PATCH nodename="C:\Users\nicola\Documents\vvvv_sketchbook\2018-01-17-pt2\patch.v4p" systemname="patch" filename="C:\Users\nicola\Documents\vvvv_sketchbook\2018-01-17-pt2\patch.v4p" bgcolor="15724527" scrollx="0" scrolly="-360">
+   <BOUNDS type="Window" left="14295" top="660" width="7755" height="7395">
+   </BOUNDS>
+   <PACK Name="addonpack" Version="35.0.0">
+   </PACK>
+   <NODE systemname="Renderer (TTY)" nodename="Renderer (TTY)" componentmode="InAWindow" id="2">
+   <BOUNDS type="Node" left="4545" top="2520" width="100" height="100">
+   </BOUNDS>
+   <BOUNDS type="Box" left="4545" top="2520" width="2400" height="1800">
+   </BOUNDS>
+   <BOUNDS type="Window" left="8310" top="2475" width="11880" height="9555">
+   </BOUNDS>
+   <PIN pinname="Clear" visible="1" slicecount="1" values="0">
+   </PIN>
+   </NODE>
+   <NODE systemname="IOBox (String)" nodename="IOBox (String)" componentmode="InABox" id="5">
+   <BOUNDS type="Node" left="2145" top="4290" width="100" height="100">
+   </BOUNDS>
+   <BOUNDS type="Box" left="2145" top="4290" width="795" height="240">
+   </BOUNDS>
+   <PIN pinname="Input String" visible="1" slicecount="4" values=",,,">
+   </PIN>
+   </NODE>
+   <NODE systemname="IOBox (String)" nodename="IOBox (String)" componentmode="InABox" id="6">
+   <BOUNDS type="Node" left="2010" top="690" width="100" height="100">
+   </BOUNDS>
+   <BOUNDS type="Box" left="2010" top="690" width="1845" height="1185">
+   </BOUNDS>
+   <PIN pinname="SliceCount Mode" slicecount="1" values="ColsRowsPages">
+   </PIN>
+   <PIN pinname="Rows" slicecount="1" values="4">
+   </PIN>
+   <PIN pinname="Show Grid" slicecount="1" values="1">
+   </PIN>
+   <PIN pinname="Input String" slicecount="4" values="luigi,mosca,luigi,montagna">
+   </PIN>
+   <PIN pinname="Output String" visible="1">
+   </PIN>
+   </NODE>
+   <NODE systemname="speechnico1 (String)" filename="plugins\Stringspeechnico1\Stringspeechnico1.csproj" nodename="speechnico1 (String)" componentmode="Hidden" id="7">
+   <BOUNDS type="Node" left="2100" top="2430" width="100" height="100">
+   </BOUNDS>
+   <BOUNDS type="Box" left="2100" top="2430" width="3000" height="3000">
+   </BOUNDS>
+   <PIN pinname="Input" visible="1">
+   </PIN>
+   <PIN pinname="Output" visible="1">
+   </PIN>
+   </NODE>
+   <LINK srcnodeid="6" srcpinname="Output String" dstnodeid="7" dstpinname="Input">
+   </LINK>
+   <NODE systemname="IOBox (Value Advanced)" nodename="IOBox (Value Advanced)" componentmode="InABox" id="8">
+   <BOUNDS type="Node" left="5385" top="420" width="100" height="100">
+   </BOUNDS>
+   <BOUNDS type="Box" left="5385" top="420" width="480" height="480">
+   </BOUNDS>
+   <PIN pinname="Value Type" slicecount="1" values="Boolean">
+   </PIN>
+   <PIN pinname="Behavior" slicecount="1" values="Bang">
+   </PIN>
+   <PIN pinname="Y Output Value" visible="1">
+   </PIN>
+   <PIN pinname="X Input Value" slicecount="1" values="0">
+   </PIN>
+   <PIN pinname="Y Input Value" slicecount="1" values="0">
+   </PIN>
+   </NODE>
+   <LINK srcnodeid="8" srcpinname="Y Output Value" dstnodeid="2" dstpinname="Clear">
+   </LINK>
+   <LINK srcnodeid="7" srcpinname="Output" dstnodeid="5" dstpinname="Input String">
+   </LINK>
+   </PATCH>
