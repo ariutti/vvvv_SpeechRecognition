@@ -13,32 +13,46 @@ namespace VVVV.Nodes
 {
 
 	/* PLUGIN INFO ********************************************************/
-	[PluginInfo(Name = "speechnico1", Category = "String", Help = "Basic template with one string in/out", Tags = "c#")]
+	[PluginInfo(Name = "speechnico1",
+				Category = "String",
+				Help = "Basic template with one string in/out",
+				Tags = "c#")]
 
 	/* CLASS **************************************************************/
 	public class Stringspeechnico1Node : IPluginEvaluate
 	{
 		/* Pins definition ************************************************/
-		[Input("Input", DefaultString = "input strings")]
+		[Input("Choices", DefaultString = "input strings")]
 		public IDiffSpread<string> FInput;
 
-		[Output("Output")]
+		[Input("BBang!", IsBang=true)]
+		public IDiffSpread<bool> FBang;
+
+		[Output("Guess", DefaultString = "")]
 		public ISpread<string> FOutput;
-		
-		//[OutputAttribute ("Bang")]
-		//public ISpread<bang> 
+
+		[Output("Confidence")]
+		public ISpread<double> Confidence;
 
 		[Import()]
 		public ILogger FLogger;
 
+
 		/* class fields *******************************************************/
-		public string guess = "";
 		public RecognizerInfo info = null;
 		public SpeechRecognitionEngine sre = null;
-		public bool done = true;
+		public static Choices choices;
 		public Thread th;
 		public int nSlices = 0;
+
+
+    // shared fields between threads
+		public string guess = "";
 		public double confidence = 0.0;
+    static bool done = false;
+    // this locker is used for thread safety
+    static readonly object locker = new object();
+
 
 		/* CONSTRUCTOR ********************************************************/
 		public Stringspeechnico1Node()
@@ -55,133 +69,108 @@ namespace VVVV.Nodes
 
 			sre = new SpeechRecognitionEngine( info );
 			sre.SetInputToDefaultAudioDevice();
-						
+
 			/* add the event handlers */
 			sre.SpeechRecognized   += new EventHandler<SpeechRecognizedEventArgs>(sr);
 			sre.RecognizeCompleted += new EventHandler<RecognizeCompletedEventArgs>(rc);
 			//sre.SpeechRecognitionRejected += new EventHandler<SpeechRecognitionRejectedEventArgs>(srr);
-			
-			/* lets load default grammar */
-			GrammarBuilder gb = new GrammarBuilder();
-			gb.Culture = sre.RecognizerInfo.Culture;
-			
-			Choices words = new Choices();
-			words.Add(new string[]{
-				"cane",
-				"abbaiare",
-				"cotoletta",
-				"milano",
-				"freccia nera",
-				"luigi",
-				"gianni",
-				"perfavore",
-				"passami",
-				"il",
-				"sale"
-			});
-			
-			gb.Append(words);
-			Grammar g = new Grammar( gb );
-			// carica la grammatica nell'sre
-			sre.LoadGrammar( g );
-			
+
 			th = new Thread( recon );
+			th.Name = "Recon";
 			th.Start();
 		}
 
-	
+
 		/* RECON THREAD *******************************************************/
-		public void recon() 
+		public void recon()
 		{
 			while( 1 != 2 )
 			{
-				FLogger.Log( LogType.Debug, "Thread ({0}): {1}, Priority {2}", 
+				FLogger.Log( LogType.Debug, "recon: Thread ({0} - {1}): {2}, Priority {3}",
 											Thread.CurrentThread.ManagedThreadId,
+											Thread.CurrentThread.Name,
 											Thread.CurrentThread.ThreadState,
-											Thread.CurrentThread.Priority
-				);
-				
+											Thread.CurrentThread.Priority);
 				sre.Recognize();
-				Thread.Sleep( 1000 );
+				FLogger.Log( LogType.Debug, "fine del riconoscimento?!");
 			}
 		}
-		
-		
+
+
 		/* CALLBACKS **********************************************************/
 		// speech recognized
 		public void sr(object sender, SpeechRecognizedEventArgs e)
 		{
-			confidence = e.Result.Confidence;
-			if( confidence > 0.95 ) 
+			lock(locker)
 			{
-				FLogger.Log( LogType.Debug, "confidence: " + confidence );
+				confidence = e.Result.Confidence;
 				guess = e.Result.Text;
-				FLogger.Log( LogType.Debug, "recognized: " + guess );
 			}
+			FLogger.Log( LogType.Debug, "Guess: {0}, Confidence {1}.", guess, confidence.ToString() );
+			//th.Join();
 		}
-		
-		
-		
+
 		// recognize complete
 		public void rc(object sender, RecognizeCompletedEventArgs e)
 		{
+			// who is the thread which is running this piece of code
+			FLogger.Log( LogType.Debug, "rc: Thread ({0} - {1}): {2}, Priority {3}",
+											Thread.CurrentThread.ManagedThreadId,
+											Thread.CurrentThread.Name,
+											Thread.CurrentThread.ThreadState,
+											Thread.CurrentThread.Priority);
 			FLogger.Log( LogType.Debug, "completed");
 			//done = true;
 		}
-		
-		/* recognize complete
-		public void srr(object sender, SpeechRecognitionRejectedEventArgs e)
-		{
-			FLogger.Log( LogType.Debug, "rejected");
-		}
-		*/
-
 
 		/* EVALUATE ***********************************************************/
 		//called when data for any output pin is requested
 		public void Evaluate(int SpreadMax)
 		{
-			/*
-			FLogger.Log( LogType.Debug, "Main Thread ({0}): {1}, Priority {2}",
-											Thread.CurrentThread.ManagedThreadId,
-											Thread.CurrentThread.ThreadState,
-											Thread.CurrentThread.Priority
-			);
-			*/
-			nSlices = SpreadMax;
-			FOutput.SliceCount = SpreadMax;
-					
 			// do something only if input is changed
 			if( FInput.IsChanged )
 			{
 				FLogger.Log(LogType.Debug, "## Input changed ##");
-				/*
-				done = false;
 
-				// generate grammar from input strings 
+				// generate grammar from input strings
 				GrammarBuilder gb = new GrammarBuilder();
 				gb.Culture = sre.RecognizerInfo.Culture;
-				
-				for(int i=0; i< SpreadMax; i++) 
+
+				// fill the list of alternative words
+				choices = new Choices();
+				for(int i=0; i< SpreadMax; i++)
 				{
 					FLogger.Log(LogType.Debug, "slice: "+FInput[i] );
-					gb.Append( FInput[i] );
+					choices.Add( FInput[i] );
 				}
+				// and put it inside the Grammar Builder
+				gb.Append(choices);
+				// use the grammar builder the build the grammar
 				Grammar g = new Grammar( gb );
-				// carica la grammatica nell'sre
-				sre.LoadGrammar( g );
-				*/
-				
+				// load the grammar inside the engine
+				// Beware: access to shared data
+				//lock( locker ) {
+					sre.LoadGrammar( g );
+				//}
+
+				//th = new Thread( recon );
+				//th.Name = "Recon";
 				//th.Start();
 			} // end of if( FInput.IsChanged )
-			
-						// replicate the string for all
-			for (int i = 0; i < nSlices; i++)
+
+			// replicate the string for all
+			FOutput[0] = guess;
+			/*
+			for (int i = 0; i < SpreadMax; i++)
 			{
-				FOutput[i] = guess;				
+				// Beware: access to shared data
+				//lock( locker) {
+					FOutput[0] = guess;
+			  //}
+				*/
 			}
-			
-			
+
+
 		} // end of Evaluate(int SpreadMax)
 	}
 }
