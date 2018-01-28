@@ -15,7 +15,7 @@ In order for the plugin to work you need to install the Windows Speech Platform 
 
 ## How it works
 
-![screenshot](/docs/screenshot.png)
+![screenshot](https://raw.githubusercontent.com/ariutti/vvvv_SpeechRecognition/master/docs/screenshot.PNG)
 
 The leftmost input pin of the node (called _Choices_) accepts multi-sliced spreads of strings. These strings are used to build up grammars of alternative words or phrases for the speech recognition engine (from now on SRE).
 
