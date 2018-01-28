@@ -15,7 +15,7 @@ namespace VVVV.Nodes
 	[PluginInfo(Name = "speechnico1", Category = "String", Help = "An italian speech recognition plugin", Author = "Nicola Ariutti", Tags = "c#")]
 
 	/* CLASS **************************************************************/
-	public class Stringspeechnico1Node : IPluginEvaluate
+	public class Stringspeechnico1Node : IPluginEvaluate, IDisposable
 	{
 		/* Pins definition ************************************************/
 		[Input("Choices", DefaultString = "input strings")]
@@ -84,6 +84,12 @@ namespace VVVV.Nodes
 			sre.RecognizeCompleted += new EventHandler<RecognizeCompletedEventArgs>(CompletedCB);
 		}
 
+		/* DESTRUCTOR *********************************************************/
+		public void Dispose()
+		{
+			FLogger.Log(LogType.Debug, "destructor;");
+		}
+
 		/* RECON THREAD *******************************************************/
 		public void Recon()
 		{
@@ -119,6 +125,7 @@ namespace VVVV.Nodes
 				// cancle the current recognition operation (if any)
 				sre.RecognizeAsyncCancel();
 
+				FLogger.Log(LogType.Debug, "Current culture: {0};", sre.RecognizerInfo.Culture.Name);
 				FLogger.Log(LogType.Debug, "Current confidence: {0}%;",
 											sre.QueryRecognizerSetting("CFGConfidenceRejectionThreshold"));
 
