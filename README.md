@@ -1,5 +1,9 @@
+# vvvv_SpeechRecognition
+
 This repository contains the code of an Italian speech recognition plugin for VVVV.
+
 The repository contains also a patch in order for you to test it a see how it works.
+
 This is still a WIP so there will be more updates and features in future commits.
 
 ## Installation
@@ -11,7 +15,7 @@ In order for the plugin to work you need to install the Windows Speech Platform 
 
 ## How it works
 
-![screenshot](docs/screenshot.png)
+![screenshot](/docs/screenshot.png)
 
 The leftmost input pin of the node (called _Choices_) accepts multi-sliced spreads of strings. These strings are used to build up grammars of alternative words or phrases for the speech recognition engine (from now on SRE).
 
@@ -36,9 +40,11 @@ The plugin has been developed and tested on a _Windows 7 Professional_ machine u
 
 ## Credits
 
-Thanks to @mrvux for his [inspirational code](https://sourceforge.net/p/vvvv/code/HEAD/tree/plugins/c%23/String/Speech/) (another [link](https://discourse.vvvv.org/t/speech-recognition/3476));
-Thanks to @leavittx for his [inspirational code](https://github.com/leavittx/vvvv-SpeechRecognition);
-Thanks to @id144 (Andrej Boleslavsky) for the precious VVVV tutorial.
+Thanks to [mrvux](https://github.com/mrvux) for his [inspirational code](https://sourceforge.net/p/vvvv/code/HEAD/tree/plugins/c%23/String/Speech/) (another [link](https://discourse.vvvv.org/t/speech-recognition/3476));
+
+Thanks to [leavittx](https://github.com/leavittx) for his [inspirational code](https://github.com/leavittx/vvvv-SpeechRecognition);
+
+Thanks to [id144](https://github.com/id144) (Andrej Boleslavsky) for the precious VVVV tutorial.
 
 ## References
 
