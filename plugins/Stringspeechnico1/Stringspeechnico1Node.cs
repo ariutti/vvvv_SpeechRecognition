@@ -33,6 +33,9 @@ namespace VVVV.Nodes
 		[Output("Completed", IsBang=true)]
 		public ISpread<bool> FOutBangCompleted;
 
+		[Output("Rejected", IsBang=true)]
+		public ISpread<bool> FOutBangRejected;
+
 		[Import()]
 		public ILogger FLogger;
 
@@ -43,12 +46,15 @@ namespace VVVV.Nodes
 		public static Choices choices;
 		public Thread th;
 		public int nSlices = 0;
-    	// shared fields between threads
+
+		// shared fields between threads
 		public string guess = "";
 		public double confidence = 0.0;
-		public bool bCompleted = false;
-    	// this locker is used for thread safety
-   		static readonly object locker = new object();
+		public bool bCompleted, bPrevCompleted   = false;
+		public bool bRejected, bPrevRejected     = false;
+
+		// this locker is used for thread safety
+		static readonly object locker = new object();
 
 		/* CONSTRUCTOR ********************************************************/
 		public Stringspeechnico1Node()
@@ -101,20 +107,42 @@ namespace VVVV.Nodes
 			sre.RecognizeAsync(RecognizeMode.Single);
 		}
 
+
 		/* EVALUATE ***********************************************************/
 		//called when data for any output pin is requested
 		public void Evaluate(int SpreadMax)
 		{
+
+			/*
+			// reset all the bangs
+			lock(locker)
+			{
+				if(bCompleted) {
+					bCompleted = false;
+					FOutBangCompleted[0] = bCompleted;
+				}
+				if(bRejected) {
+					bRejected = false;
+					FOutBangRejected[0] = bRejected;
+				}
+			}
+			*/
+			
+
 			if(FInConfidenceThreshold.IsChanged)
 			{
 				var c = (Int32)FInConfidenceThreshold[0];
 				if(c > 100)
+				{
 					c = 100;
+				}
 				else if(c < 0)
+				{
 					c = 0;
+				}
 				//FLogger.Log(LogType.Debug, sre.QueryRecognizerSetting("CFGConfidenceRejectionThreshold").ToString() );
 				sre.UpdateRecognizerSetting("CFGConfidenceRejectionThreshold", c);
-				//FLogger.Log(LogType.Debug, sre.QueryRecognizerSetting("CFGConfidenceRejectionThreshold").ToString() );
+				FLogger.Log(LogType.Debug, "Changed Threshold: {0}", sre.QueryRecognizerSetting("CFGConfidenceRejectionThreshold").ToString() );
 			}
 
 			// do something only if input is changed
@@ -158,50 +186,71 @@ namespace VVVV.Nodes
 			//FLogger.Log(LogType.Debug, bCompleted.ToString());
 
 			// replicate the string for all
-            lock(locker)
+			lock(locker) 
 			{
-                FOutGuess[0] = guess;
-            	FOutConfidence[0] = confidence;
-            }
-
-			FOutBangCompleted[0] = bCompleted;
-			bCompleted = false;
+				FOutGuess[0] = guess;
+				FOutConfidence[0] = confidence;
+				
+				if(bCompleted != bPrevCompleted) {
+					FOutBangCompleted[0] = bCompleted;
+					bPrevCompleted = bCompleted;
+					if(bCompleted)
+						bCompleted = false;
+				}
+				
+				if(bRejected != bPrevRejected)
+				{
+					FOutBangRejected[0] = bRejected;
+					bPrevRejected = bRejected;
+					if(bRejected)
+						bRejected = false;				
+				}
+			}
 		}
+
 
 		/* HANDLERS ***********************************************************/
 		public void DetectedCB(object sender, SpeechDetectedEventArgs e)
 		{
 			FLogger.Log(LogType.Debug, "Th {0} -     detected;",
-													Thread.CurrentThread.ManagedThreadId);
+																	Thread.CurrentThread.ManagedThreadId);
 		}
 
-        public void HypothesizedCB(object sender, SpeechHypothesizedEventArgs e)
+
+		public void HypothesizedCB(object sender, SpeechHypothesizedEventArgs e)
 		{
 			FLogger.Log(LogType.Debug, "Th {0} - hypothesized - {2:0.0000} - '{1}';",
-													Thread.CurrentThread.ManagedThreadId,
-                                                    e.Result.Text,
-                                                    e.Result.Confidence);
+																	Thread.CurrentThread.ManagedThreadId,
+																	e.Result.Text,
+																	e.Result.Confidence);
 		}
+
 
 		public void RejectedCB(object sender, SpeechRecognitionRejectedEventArgs e)
 		{
 			FLogger.Log(LogType.Debug, "Th {0} -     rejected:",
-													Thread.CurrentThread.ManagedThreadId);
+																	Thread.CurrentThread.ManagedThreadId);
 
 			foreach (RecognizedPhrase phrase in e.Result.Alternates)
 			{
-                FLogger.Log(LogType.Debug, "    rejected phrase - {1:0.0000} - '{0}'; ",
-													phrase.Text,
-													phrase.Confidence);
-            }
+				FLogger.Log(LogType.Debug, "    rejected phrase - {1:0.0000} - '{0}'; ",
+																	phrase.Text,
+																	phrase.Confidence);
+			}
+			lock(locker)
+			{
+				bRejected = true;
+				//FOutBangRejected[0] = bRejected; // does it work?
+			}
 		}
+
 
 		public void RecognizedCB(object sender, SpeechRecognizedEventArgs e)
 		{
 			FLogger.Log(LogType.Debug, "Th {0} -   recognized - {2:0.0000} - '{1}';",
-                                            Thread.CurrentThread.ManagedThreadId,
-                                            e.Result.Text,
-                                            e.Result.Confidence);
+																	Thread.CurrentThread.ManagedThreadId,
+																	e.Result.Text,
+																	e.Result.Confidence);
 			lock(locker)
 			{
 				confidence = e.Result.Confidence;
@@ -209,25 +258,26 @@ namespace VVVV.Nodes
 			}
 		}
 
+
 		public void CompletedCB(object sender, RecognizeCompletedEventArgs e)
 		{
 			if(e.Result != null)
 			{
-                FLogger.Log(LogType.Debug, "Th {0} -    completed - {2:0.0000} - '{1}';",
-											Thread.CurrentThread.ManagedThreadId,
-											e.Result.Text,
-                                            e.Result.Confidence);
+				FLogger.Log(LogType.Debug, "Th {0} -    completed - {2:0.0000} - '{1}';",
+																	Thread.CurrentThread.ManagedThreadId,
+																	e.Result.Text,
+																	e.Result.Confidence);
 				lock(locker)
 				{
 					bCompleted = true;
+					//FOutBangCompleted[0] = bCompleted; // does it work?
 				}
-            }
+			}
 			else
 			{
-                FLogger.Log(LogType.Debug, "Th {0} -    completed;",
-            								Thread.CurrentThread.ManagedThreadId);
-            }
-
+				FLogger.Log(LogType.Debug, "Th {0} -    completed;",
+																	Thread.CurrentThread.ManagedThreadId);
+			}
 			FLogger.Log(LogType.Debug, "");
 		}
 	}

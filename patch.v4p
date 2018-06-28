@@ -1,6 +1,6 @@
-<!DOCTYPE PATCH  SYSTEM "http://vvvv.org/versions/vvvv50beta35.8.dtd" >
+<!DOCTYPE PATCH  SYSTEM "http://vvvv.org/versions/vvvv50beta36.dtd" >
    <PATCH nodename="C:\Users\nicola\Documents\vvvv_sketchbook\vvvv_SpeechRecognition\patch.v4p" systemname="patch" filename="C:\Users\nicola\Documents\vvvv_sketchbook\2018-01-17-pt2\patch.v4p" bgcolor="15724527" scrollx="0" scrolly="-360" locked="0">
-   <BOUNDS type="Window" left="0" top="0" width="13740" height="13290">
+   <BOUNDS type="Window" left="1560" top="0" width="13740" height="13290">
    </BOUNDS>
    <PACK Name="addonpack" Version="35.0.0">
    </PACK>
@@ -41,7 +41,7 @@
    </PIN>
    <PIN pinname="BBang!" visible="1">
    </PIN>
-   <PIN pinname="Choices" visible="1" slicecount="4" values="andiamo,bicicletta,rinominare,che">
+   <PIN pinname="Choices" visible="1" slicecount="6" values="search,actually,dog,cat,switching,happy">
    </PIN>
    <PIN pinname="Confidence" visible="1">
    </PIN>
@@ -50,6 +50,8 @@
    <PIN pinname="Completed" visible="1">
    </PIN>
    <PIN pinname="Confidence Threshold!" visible="1">
+   </PIN>
+   <PIN pinname="Rejected" visible="1">
    </PIN>
    </NODE>
    <LINK srcnodeid="6" srcpinname="Output String" dstnodeid="7" dstpinname="Input">
@@ -334,7 +336,7 @@
    </LINK>
    <LINK srcnodeid="22" srcpinname="Y Output Value" dstnodeid="21" dstpinname="Input 2">
    </LINK>
-   <NODE componentmode="InABox" id="36" nodename="RENDERER (EX9)" systemname="Renderer (EX9)">
+   <NODE componentmode="InABox" id="36" nodename="RENDERER (EX9)" systemname="RENDERER (EX9)">
    <BOUNDS height="0" left="750" top="9240" type="Node" width="0">
    </BOUNDS>
    <BOUNDS height="4860" left="6975" top="8340" type="Window" width="6120">
@@ -352,6 +354,8 @@
    <PIN pinname="Windowed Depthbuffer Format" slicecount="1" values="NONE">
    </PIN>
    <PIN pinname="Windowed Antialiasing Quality Level" slicecount="1" values="NONE">
+   </PIN>
+   <PIN pinname="Auto Aspect Ratio" slicecount="1" values="0">
    </PIN>
    </NODE>
    <NODE id="35" nodename="Quad (DX9)" systemname="Quad (DX9)">
@@ -439,9 +443,9 @@
    <LINK dstnodeid="33" dstpinname="Text" srcnodeid="29" srcpinname="Output">
    </LINK>
    <NODE nodename="IOBox (Value Advanced)" componentmode="InABox" id="27" systemname="IOBox (Value Advanced)">
-   <BOUNDS type="Box" left="3135" top="5220" width="480" height="480">
+   <BOUNDS type="Box" left="3180" top="5460" width="480" height="480">
    </BOUNDS>
-   <BOUNDS type="Node" left="3135" top="5220" width="0" height="0">
+   <BOUNDS type="Node" left="3180" top="5460" width="0" height="0">
    </BOUNDS>
    <PIN pinname="Units" slicecount="1" values="||">
    </PIN>
@@ -456,6 +460,8 @@
    <PIN pinname="X Input Value" slicecount="1" values="0">
    </PIN>
    <PIN pinname="Y Input Value" slicecount="1" visible="1" values="0">
+   </PIN>
+   <PIN pinname="Descriptive Name" slicecount="1" values="|Completed - Set|">
    </PIN>
    </NODE>
    <NODE systemname="IOBox (Value Advanced)" nodename="IOBox (Value Advanced)" componentmode="InABox" id="38">
@@ -475,9 +481,9 @@
    </PIN>
    </NODE>
    <NODE systemname="IOBox (Value Advanced)" nodename="IOBox (Value Advanced)" componentmode="InABox" id="39">
-   <BOUNDS type="Node" left="1605" top="4770" width="100" height="100">
+   <BOUNDS type="Node" left="1395" top="4815" width="100" height="100">
    </BOUNDS>
-   <BOUNDS type="Box" left="1605" top="4770" width="795" height="240">
+   <BOUNDS type="Box" left="1395" top="4815" width="795" height="240">
    </BOUNDS>
    <PIN pinname="Y Input Value" visible="1">
    </PIN>
@@ -502,8 +508,6 @@
    </LINK>
    <LINK srcnodeid="7" srcpinname="Guess" dstnodeid="29" dstpinname="Input">
    </LINK>
-   <LINK srcnodeid="27" srcpinname="Y Output Value" dstnodeid="29" dstpinname="Set">
-   </LINK>
    <NODE systemname="IOBox (String)" nodename="IOBox (String)" componentmode="InABox" id="42">
    <BOUNDS type="Node" left="2685" top="105" width="100" height="100">
    </BOUNDS>
@@ -521,11 +525,11 @@
    </PIN>
    </NODE>
    <NODE componentmode="InABox" id="43" nodename="IOBOX (VALUE ADVANCED)" systemname="IOBox (Value Advanced)">
-   <BOUNDS height="0" left="9795" top="2745" type="Node" width="0">
+   <BOUNDS height="0" left="9825" top="2640" type="Node" width="0">
    </BOUNDS>
    <BOUNDS height="160" left="7883" top="6468" type="Window" width="215">
    </BOUNDS>
-   <BOUNDS height="1320" left="9795" top="2745" type="Box" width="285">
+   <BOUNDS height="1320" left="9825" top="2640" type="Box" width="285">
    </BOUNDS>
    <PIN pinname="Columns" slicecount="1" values="1">
    </PIN>
@@ -533,7 +537,7 @@
    </PIN>
    <PIN pinname="Show Grid" slicecount="1" values="1">
    </PIN>
-   <PIN pinname="Y Input Value" slicecount="1" values="91.1785714285714">
+   <PIN pinname="Y Input Value" slicecount="1" values="89.3928571428572">
    </PIN>
    <PIN pinname="Show Slider" slicecount="1" values="1">
    </PIN>
@@ -569,8 +573,6 @@
    <LINK srcnodeid="43" srcpinname="Y Output Value" dstnodeid="44" dstpinname="Y Input Value">
    </LINK>
    <LINK srcnodeid="44" srcpinname="Y Output Value" dstnodeid="7" dstpinname="Confidence Threshold!">
-   </LINK>
-   <LINK srcnodeid="7" srcpinname="Completed" dstnodeid="27" dstpinname="Y Input Value">
    </LINK>
    <NODE systemname="IOBox (String)" nodename="IOBox (String)" componentmode="InABox" id="45">
    <BOUNDS type="Node" left="4890" top="90" width="100" height="100">
@@ -636,6 +638,46 @@
    <PIN pinname="Output String" visible="1">
    </PIN>
    </NODE>
+   <NODE nodename="IOBox (Value Advanced)" componentmode="InABox" id="49">
+   <BOUNDS type="Box" left="4335" top="5445" width="480" height="480">
+   </BOUNDS>
+   <BOUNDS type="Node" left="4335" top="5445" width="0" height="0">
+   </BOUNDS>
+   <PIN pinname="Units" slicecount="1" values="||">
+   </PIN>
+   <PIN pinname="Precision" slicecount="1" values="4">
+   </PIN>
+   <PIN pinname="Value Type" slicecount="1" values="Boolean">
+   </PIN>
+   <PIN pinname="Behavior" slicecount="1" values="Bang">
+   </PIN>
+   <PIN pinname="Descriptive Name" slicecount="1" values="Rejected">
+   </PIN>
+   <PIN pinname="Y Input Value" visible="1" slicecount="1" values="0">
+   </PIN>
+   </NODE>
+   <LINK srcnodeid="7" srcpinname="Rejected" dstnodeid="49" dstpinname="Y Input Value">
+   </LINK>
+   <NODE systemname="IOBox (String)" nodename="IOBox (String)" componentmode="InABox" id="50">
+   <BOUNDS type="Node" left="4875" top="2055" width="100" height="100">
+   </BOUNDS>
+   <BOUNDS type="Box" left="4875" top="2055" width="1845" height="1185">
+   </BOUNDS>
+   <PIN pinname="SliceCount Mode" slicecount="1" values="ColsRowsPages">
+   </PIN>
+   <PIN pinname="Rows" slicecount="1" values="4">
+   </PIN>
+   <PIN pinname="Show Grid" slicecount="1" values="1">
+   </PIN>
+   <PIN pinname="Input String" slicecount="4" values="gianni,francesco,cavallo,qualcosa">
+   </PIN>
+   <PIN pinname="Output String" visible="1">
+   </PIN>
+   </NODE>
+   <LINK srcnodeid="7" srcpinname="Completed" dstnodeid="27" dstpinname="Y Input Value">
+   </LINK>
+   <LINK srcnodeid="27" srcpinname="Y Output Value" dstnodeid="29" dstpinname="Set">
+   </LINK>
    <LINK srcnodeid="47" srcpinname="Output String" dstnodeid="7" dstpinname="Choices">
    </LINK>
    </PATCH>
