@@ -38,6 +38,10 @@ The plugin has been developed and tested on a _Windows 7 Professional_ machine u
 * VVVV version 50beta35.8_x64;
 * Visual Studio Community 2017;
 
+## Microsoft Speech Platform 11 documentation
+
+* [link](https://docs.microsoft.com/en-us/previous-versions/office/developer/speech-technologies/hh378466(v=office.14)
+
 ## Credits
 
 Thanks to [mrvux](https://github.com/mrvux) for his [inspirational code](https://sourceforge.net/p/vvvv/code/HEAD/tree/plugins/c%23/String/Speech/) (another [link](https://discourse.vvvv.org/t/speech-recognition/3476));

@@ -35,15 +35,21 @@ namespace VVVV.Nodes
 
 		[Output("Rejected", IsBang=true)]
 		public ISpread<bool> FOutBangRejected;
+		
+		[Output("Audio State", DefaultString = "")]
+		public ISpread<string> FOutAudioState;
+		
+		[Output("Audio Problem", DefaultString = "")]
+		public ISpread<string> FOutAudioProblem;
 
 		[Import()]
 		public ILogger FLogger;
 
 		/* class fields *******************************************************/
 		// TODO: public? static? public static?
-		public static RecognizerInfo info = null;
-		public static SpeechRecognitionEngine sre = null;
-		public static Choices choices;
+		public RecognizerInfo info = null;
+		public SpeechRecognitionEngine sre = null;
+		public Choices choices;
 		public Thread th;
 		public int nSlices = 0;
 
@@ -54,7 +60,7 @@ namespace VVVV.Nodes
 		public bool bRejected, bPrevRejected     = false;
 
 		// this locker is used for thread safety
-		static readonly object locker = new object();
+		readonly object locker = new object();
 
 		/* CONSTRUCTOR ********************************************************/
 		public Stringspeechnico1Node()
@@ -78,16 +84,18 @@ namespace VVVV.Nodes
 			// Speech recognition Engine Settings //
 			sre.SetInputToDefaultAudioDevice();
 			// timing
-			sre.InitialSilenceTimeout = TimeSpan.FromSeconds(3);
-			sre.BabbleTimeout = TimeSpan.FromSeconds(2);
-			sre.EndSilenceTimeout = TimeSpan.FromSeconds(1);
-			sre.EndSilenceTimeoutAmbiguous = TimeSpan.FromSeconds(1.5);
+			sre.InitialSilenceTimeout = TimeSpan.FromSeconds(3); // 3
+			sre.BabbleTimeout = TimeSpan.FromSeconds(0); // 2
+			sre.EndSilenceTimeout = TimeSpan.FromSeconds(1); // 1
+			sre.EndSilenceTimeoutAmbiguous = TimeSpan.FromSeconds(1.5); // 1.5
 			// handlers
 			sre.SpeechDetected += new EventHandler<SpeechDetectedEventArgs>(DetectedCB);
 			sre.SpeechHypothesized += new EventHandler<SpeechHypothesizedEventArgs>(HypothesizedCB);
 			sre.SpeechRecognitionRejected += new EventHandler<SpeechRecognitionRejectedEventArgs>(RejectedCB);
 			sre.SpeechRecognized += new EventHandler<SpeechRecognizedEventArgs>(RecognizedCB);
 			sre.RecognizeCompleted += new EventHandler<RecognizeCompletedEventArgs>(CompletedCB);
+			sre.AudioStateChanged += new EventHandler<AudioStateChangedEventArgs>(AudioStateChangedCB);
+			sre.AudioSignalProblemOccurred += new EventHandler<AudioSignalProblemOccurredEventArgs>(AudioSignalProblemOccurredCB);
 		}
 
 		/* DESTRUCTOR *********************************************************/
@@ -279,6 +287,32 @@ namespace VVVV.Nodes
 																	Thread.CurrentThread.ManagedThreadId);
 			}
 			FLogger.Log(LogType.Debug, "");
+		}
+		
+		public void AudioStateChangedCB(object sender, AudioStateChangedEventArgs e)
+		{
+			AudioState newState = e.AudioState;
+			//FLogger.Log(LogType.Debug, "Audio State: {0}", newState.ToString() );
+			FOutAudioState[0] = newState.ToString();
+		}
+		
+		public void AudioSignalProblemOccurredCB(object sender, AudioSignalProblemOccurredEventArgs e)
+		{
+			//FLogger.Log(LogType.Debug, "\n\nAudio signal problem information:\n\tAudio level: {0};\n\tAudio position:{1};\n\tAudio signal problem:{2};\n\n", e.AudioLevel, e.AudioPosition,  e.AudioSignalProblem);
+			/*
+			StringBuilder details = new StringBuilder();
+
+  			details.AppendLine("Audio signal problem information:");
+  			details.AppendFormat(
+    				" Audio level:               {0}" + Environment.NewLine +
+    				" Audio position:            {1}" + Environment.NewLine +
+    				" Audio signal problem:      {2}" + Environment.NewLine +
+    				" Recognition engine audio position: {3}" + Environment.NewLine,
+    				e.AudioLevel, e.AudioPosition,  e.AudioSignalProblem, e.recoEngineAudioPosition);
+			*/
+			FOutAudioProblem[0] = e.AudioSignalProblem.ToString();
+			//FOutAudioProblem[1] = e.AudioLevel.ToString();
+			//FOutAudioProblem[2] = e.AudioPosition.ToString();
 		}
 	}
 }
